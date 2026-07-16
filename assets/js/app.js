@@ -50,6 +50,7 @@
     '경남': { center: [35.25, 128.25], zoom: 9 }
   };
 
+  var PAGE_SIZE = 60;
   var state = {
     q: '',
     region: '',
@@ -58,8 +59,10 @@
     kidsCare: false,
     erCare: false,
     favOnly: false,
-    view: 'list'
+    view: 'list',
+    renderedCount: PAGE_SIZE
   };
+  var currentList = [];
 
   var favorites = loadFavorites();
 
@@ -119,7 +122,7 @@
   }
 
   /* ---------- 지도 ---------- */
-  var map = L.map('map', { zoomControl: true })
+  var map = L.map('map', { zoomControl: true, renderer: L.canvas() })
     .setView(REGION_VIEW[''].center, REGION_VIEW[''].zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -198,8 +201,16 @@
 
   function renderCards(list) {
     var grid = document.getElementById('cardGrid');
-    grid.innerHTML = list.map(cardHtml).join('');
+    var shown = list.slice(0, state.renderedCount);
+    grid.innerHTML = shown.map(cardHtml).join('');
     document.getElementById('emptyState').hidden = list.length > 0;
+    var moreBtn = document.getElementById('loadMoreBtn');
+    if (shown.length < list.length) {
+      moreBtn.hidden = false;
+      moreBtn.textContent = '더 보기 (' + shown.length + ' / ' + list.length + ')';
+    } else {
+      moreBtn.hidden = true;
+    }
   }
 
   /* ---------- 상세 모달 ---------- */
@@ -248,11 +259,12 @@
 
   /* ---------- 렌더 파이프라인 ---------- */
   function render() {
-    var list = HOSPITALS.filter(matches);
-    renderMarkers(list);
-    renderCards(list);
+    currentList = HOSPITALS.filter(matches);
+    state.renderedCount = PAGE_SIZE;
+    renderMarkers(currentList);
+    renderCards(currentList);
     document.getElementById('resultCount').textContent =
-      '총 ' + list.length + '곳이 있어요' + (list.length < HOSPITALS.length ? ' (전체 ' + HOSPITALS.length + '곳 중)' : '!');
+      '총 ' + currentList.length + '곳이 있어요' + (currentList.length < HOSPITALS.length ? ' (전체 ' + HOSPITALS.length + '곳 중)' : '!');
   }
 
   /* ---------- 초기 UI 구성 ---------- */
@@ -444,6 +456,11 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeModal();
+  });
+
+  document.getElementById('loadMoreBtn').addEventListener('click', function () {
+    state.renderedCount += PAGE_SIZE;
+    renderCards(currentList);
   });
 
   document.getElementById('resetBtn').addEventListener('click', function () {
