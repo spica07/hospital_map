@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.tile.openstreetmap.org https://unpkg.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>전국 병원급 의료기관 지도 🏥</title>
+<meta name="description" content="전국 병원급 이상 의료기관 지도 — 지역별 조회, 검색, 소아청소년과·응급실 운영 정보">
+<meta name="theme-color" content="#D64550">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/icons/app-icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/app-icon-apple-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="병원 지도">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <h1 class="app-title">🏥 전국 병원급 의료기관 지도 🩺</h1>
+    <p class="app-subtitle">전국 병원급 이상 의료기관 <span id="totalCount"></span>곳을 한눈에!</p>
+    <div class="top-notice">🏥 참고용으로만 사용! 방문 전 진료 가능 여부를 꼭 확인하세요.</div>
+  </div>
+  <div class="floating-emoji e1">💊</div>
+  <div class="floating-emoji e2">🩹</div>
+  <div class="floating-emoji e3">🚑</div>
+  <div class="floating-emoji e4">👶</div>
+</header>
+
+<main class="container">
+
+  <!-- 필터 바 -->
+  <section class="panel filter-bar">
+    <div class="filter-row search-row">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="search" id="searchInput" placeholder="병원 이름이나 주소로 검색해 보세요" autocomplete="off">
+      </div>
+      <select id="districtSelect" class="district-select" aria-label="시군구 선택">
+        <option value="">전체 시·군·구</option>
+      </select>
+      <button class="filter-collapse-btn" id="filterToggleBtn" type="button"
+              title="필터 열기" aria-label="필터 열기" aria-expanded="false">🔽</button>
+    </div>
+    <div class="filter-groups" id="filterGroups" hidden>
+      <div class="filter-row" id="regionFilters" data-key="region">
+        <span class="filter-label">🌏 지역</span>
+      </div>
+      <div class="filter-row" id="kindFilters" data-key="kind">
+        <span class="filter-label">🏷️ 종류</span>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">⚡ 빠른필터</span>
+        <button class="pill" id="kidsCareBtn" data-toggle="kidsCare">👶 소아청소년과</button>
+        <button class="pill" id="erCareBtn" data-toggle="erCare">🚑 응급실</button>
+        <button class="pill" id="favOnly" data-toggle="favOnly">❤️ 찜만 보기</button>
+        <button class="pill reset" id="resetBtn">↺ 초기화</button>
+      </div>
+    </div>
+    <div class="result-count" id="resultCount"></div>
+  </section>
+
+  <!-- 뷰 전환 (모바일) -->
+  <div class="view-toggle" id="viewToggle">
+    <button class="pill" data-view="map">🗺️ 지도</button>
+    <button class="pill active" data-view="list">📋 목록</button>
+  </div>
+
+  <!-- 지도 + 카드 목록 -->
+  <section class="content-grid">
+    <div class="map-pane" id="mapPane">
+      <div id="map"></div>
+      <div class="map-legend" id="mapLegend"></div>
+    </div>
+    <div class="list-pane" id="listPane">
+      <div class="card-grid" id="cardGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-emoji">🏥</div>
+        <p>조건에 맞는 곳이 없어요.<br>필터를 바꿔 보세요!</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    <p>자료: 건강보험심사평가원 「병원정보서비스」 (조회일 <span id="surveyDate"></span>) · 진료과목·응급실 운영은 바뀔 수 있으니 방문 전 꼭 확인하세요.</p>
+  </footer>
+</main>
+
+<div class="site-notice" role="note">
+  © 2026 전국 병원급 의료기관 지도 · 본 사이트는 정보 공유 목적으로 제공됩니다. 응급 상황에는 119에 먼저 연락하세요. 시설명·상표 등의 권리는 해당 권리자에게 있습니다.
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" aria-label="닫기">✕</button>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
