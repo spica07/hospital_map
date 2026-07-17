@@ -264,7 +264,7 @@
     renderMarkers(currentList);
     renderCards(currentList);
     document.getElementById('resultCount').textContent =
-      '총 ' + currentList.length + '곳이 있어요' + (currentList.length < HOSPITALS.length ? ' (전체 ' + HOSPITALS.length + '곳 중)' : '!');
+      '총 ' + currentList.length + '곳' + (currentList.length < HOSPITALS.length ? ' (전체 ' + HOSPITALS.length + '곳 중)' : '');
   }
 
   /* ---------- 초기 UI 구성 ---------- */
@@ -477,7 +477,6 @@
   });
 
   /* ---------- 시작 ---------- */
-  document.getElementById('totalCount').textContent = HOSPITALS.length;
   document.getElementById('surveyDate').textContent = DATA_META.surveyDate || '';
   buildFilterPills();
   buildDistrictSelect();
