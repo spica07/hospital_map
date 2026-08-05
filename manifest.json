@@ -8,8 +8,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#FDEEEE",
-  "theme_color": "#D64550",
+  "background_color": "#F7F7F5",
+  "theme_color": "#A8232B",
   "categories": ["health", "lifestyle", "utilities"],
   "icons": [
     {
