@@ -827,16 +827,9 @@ body {
 .load-more-btn[hidden] { display: none; }
 
 /* ---------- 내 주변 (geo.js) ---------- */
-.nearby-btn { gap: 5px; }
-.nearby-btn .ico { width: 16px; height: 16px; }
 /* 위치를 묻는 동안 — 브라우저 팝업이 떠 있는 시간이라 몇 초씩 걸린다.
    버튼이 눌리지 않는 이유를 색으로 알린다. */
 .nearby-btn:disabled { opacity: .55; cursor: default; }
-
-/* 응급실 — 빠른필터 안에도 같은 data-toggle 버튼이 있고, 둘은 늘 함께 켜지고
-   함께 꺼진다. 여기 것은 첫 화면에서 바로 누를 수 있게 꺼내 둔 것이다. */
-.er-btn { gap: 5px; }
-.er-btn .ico { width: 16px; height: 16px; }
 
 /* 거리는 내 주변 모드에서만 붙고, 그 화면에서 가장 먼저 읽는 값이다.
    면 채움은 무료 태그의 몫이므로 여기서는 옅은 톤으로 둔다. */
